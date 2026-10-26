@@ -355,6 +355,10 @@ export default function Observatorio() {
       });
     }),
   };
+  const selectedCropAreaValues = permanentCropAreas
+    .filter((item) => selectedAreaCrops.includes(item.crop))
+    .flatMap((item) => [item[2023], item[2024], item[2025]]);
+  const cropAreaDomainMax = Math.max(100, Math.ceil((Math.max(...selectedCropAreaValues, 0) + 1) / 100) * 100);
 
   const openDetail = (metric: Metric) => setDetail(metric);
   const sectionLinks = [
@@ -420,7 +424,7 @@ export default function Observatorio() {
               <LineChart data={cropAreaChartData} margin={{ top: 12, right: 16, left: 4, bottom: 2 }}>
                 <CartesianGrid stroke="#e8eee9" vertical={false} />
                 <XAxis dataKey="year" tickLine={false} axisLine={false} />
-                <YAxis width={52} tickLine={false} axisLine={false} domain={[0, "dataMax + 50"]} />
+                <YAxis width={64} tickLine={false} axisLine={false} domain={[0, cropAreaDomainMax]} tickCount={5} tickFormatter={(value) => num.format(Number(value))} />
                 <Tooltip content={({ active, payload, label }) => {
                   if (!active || !payload?.length) return null;
                   const year = Number(label);
@@ -538,12 +542,12 @@ export default function Observatorio() {
           </div>
           <div className="obs-crop-chart">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={productionRows} margin={{ top: 10, right: 18, left: 4, bottom: 5 }}>
+              <BarChart data={productionRows} margin={{ top: 10, right: 18, left: 4, bottom: 12 }}>
                 <CartesianGrid stroke="#e8eee9" vertical={false} />
-                <XAxis dataKey="crop" tickLine={false} axisLine={false} interval={0} />
-                <YAxis width={55} unit=" t" tickLine={false} axisLine={false} />
+                <XAxis dataKey="crop" height={48} tick={{ fontSize: 11, fontWeight: 700 }} tickLine={false} axisLine={false} interval={0} />
+                <YAxis width={68} tickLine={false} axisLine={false} tickFormatter={(value) => num.format(Number(value))} />
                 <Tooltip formatter={(value) => [`${num.format(Number(value))} t`, "Produção"]} />
-                {productionYear === "Comparar" && <Legend />}
+                {productionYear === "Comparar" && <Legend wrapperStyle={{ paddingTop: 8, fontWeight: 700 }} />}
                 {productionYear !== "2025" && <Bar dataKey="2024" name="2024" fill="#9abf98" radius={[5, 5, 0, 0]} />}
                 {productionYear !== "2024" && <Bar dataKey="2025" name="2025" fill="#14804a" radius={[5, 5, 0, 0]} />}
               </BarChart>

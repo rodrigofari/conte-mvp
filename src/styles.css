@@ -3400,9 +3400,10 @@ a {
   cursor: pointer;
 }
 .obs-crop-plot {
-  height: 340px;
+  height: 390px;
 }
-.obs-area-crop-plot { height: 330px; }
+.obs-area-crop-plot { height: 360px; }
+.obs-area-crop-plot > .recharts-responsive-container { height: 300px !important; }
 .obs-area-crop-controls { justify-content: flex-start; margin-bottom: 0; }
 .obs-crop-picker { position: relative; z-index: 5; color: #43594a; font-size: 11px; }
 .obs-crop-picker summary {
@@ -3584,7 +3585,7 @@ a {
   margin: 2px 0 5px;
 }
 .obs-crop-chart {
-  height: 290px;
+  height: 320px;
 }
 .obs-ppp-heading {
   align-items: center;
@@ -3887,9 +3888,10 @@ a {
   .obs-indicator-copy strong { font-size: 20px; }
   .obs-chart-card { padding: 14px 12px 12px; }
   .obs-chart-plot { height: 230px; }
-  .obs-crop-plot { height: 320px; }
-  .obs-area-crop-plot { height: 320px; }
-  .obs-crop-chart { height: 270px; }
+  .obs-crop-plot { height: 365px; }
+  .obs-area-crop-plot { height: 355px; }
+  .obs-area-crop-plot > .recharts-responsive-container { height: 290px !important; }
+  .obs-crop-chart { height: 295px; }
   .obs-chart-controls { justify-content: flex-start; flex-wrap: wrap; }
   .obs-filter { min-width: 0; flex: 1; }
   .obs-filter select { min-width: 0; flex: 1; }
