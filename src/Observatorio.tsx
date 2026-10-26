@@ -33,7 +33,6 @@ import {
   climateEvidence,
   climateAnnual,
   cropProduction,
-  landUseComposition,
   observatoryIndicators,
   observatorySources,
   permanentCropAreas,
@@ -236,20 +235,13 @@ function DetailPanel({ metric, onClose }: { metric: Metric; onClose: () => void 
 }
 
 const metrics = observatoryIndicators as unknown as Record<string, Metric>;
-const compositionMetric: Metric = {
-  id: "sau-composition-2019-2023",
-  title: "Composição da SAU",
-  unit: "% da SAU",
-  scope: "Região Autónoma da Madeira",
-  period: "2019 e 2023",
-  sourceIds: ["drem-structure-2023"],
-  note: "Percentagens publicadas pela DREM; valores arredondados podem não somar 100%. O gráfico compara composição, não Área absoluta.",
-  dataRows: landUseComposition.flatMap((row) => [
-    { label: `${row.year}  ·  Terras aráveis`, value: row.arable },
-    { label: `${row.year}  ·  Culturas permanentes`, value: row.permanent },
-    { label: `${row.year}  ·  Horta familiar`, value: row.garden },
-    { label: `${row.year}  ·  Pastagens permanentes`, value: row.pasture },
-  ]),
+const holdingsEvolutionMetric: Metric = {
+  ...metrics.holdingsEvolution,
+  dataRows: (metrics.holdingsEvolution.series || []).map((point, index, series) => {
+    const previous = series[index - 1];
+    const change = previous ? ((point.value - previous.value) / previous.value) * 100 : undefined;
+    return { label: `${point.year}${change === undefined ? " · referência inicial" : ` · ${percent.format(change)}% vs ${previous.year}`}`, value: point.value };
+  }),
 };
 
 const annualTemperatureDetailMetric: Metric = {
@@ -275,7 +267,7 @@ const cropAreaChartData = [2023, 2024, 2025].map((year) => ({
 const cropLineColors = ["#14804a", "#d28b35", "#4d91b6", "#9665a7", "#c45b55", "#7f9c43", "#5369a1", "#bf6f91", "#a57b51", "#168a86", "#7d7d7d", "#bcaa3d", "#655d83", "#689365", "#cd704c", "#557b8c"];
 
 const sourceGroups: Record<string, string[]> = {
-  DREM: ["drem-structure-2023", "drem-agriculture-2025", "drem-agriculture-2024", "drem-annual-2020", "drem-climate-series-2025"],
+  DREM: ["drem-structure-2023", "drem-holdings-2009-2019", "drem-agriculture-2025", "drem-agriculture-2024", "drem-annual-2020", "drem-climate-series-2025"],
   IPMA: ["ipma-funchal-normal"],
   "Governo Regional": ["madeira-apiculture-2023"],
   "Observatório do Clima": ["madeira-climate-agriculture"],
@@ -447,26 +439,31 @@ export default function Observatorio() {
             </ResponsiveContainer>
           </ChartCard>
 
-          <ChartCard metric={compositionMetric} explainer="A SAU é a superfície agrícola utilizada. As barras mostram a percentagem dessa área em cada tipo de utilização, não hectares; comparam 2019 e 2023." onDetail={openDetail}>
+          <ChartCard metric={holdingsEvolutionMetric} explainer="Pontos de referência dos recenseamentos de 2009 e 2019 e do inquérito estrutural de 2023. Os anos intermédios não foram estimados." onDetail={openDetail}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={landUseComposition} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
+              <LineChart data={holdingsEvolutionMetric.series} margin={{ top: 14, right: 14, left: 4, bottom: 4 }}>
                 <CartesianGrid stroke="#e8eee9" vertical={false} />
                 <XAxis dataKey="year" tickLine={false} axisLine={false} />
-                <YAxis width={54} unit="%" tickLine={false} axisLine={false} domain={[0, 100]} />
-                <Tooltip formatter={(value) => [`${num.format(Number(value))}%`]} />
-                <Legend />
-                <Bar dataKey="arable" name="Terras aráveis" stackId="a" fill="#9abf98" radius={[0, 0, 0, 0]} />
-                <Bar dataKey="permanent" name="Culturas permanentes" stackId="a" fill="#14804a" />
-                <Bar dataKey="garden" name="Horta familiar" stackId="a" fill="#e3ae4e" />
-                <Bar dataKey="pasture" name="Pastagens permanentes" stackId="a" fill="#7ca8ba" radius={[5, 5, 0, 0]} />
-              </BarChart>
+                <YAxis width={65} tickLine={false} axisLine={false} domain={[0, "dataMax + 1500"]} tickCount={4} tickFormatter={(value) => num.format(Number(value))} />
+                <Tooltip content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null;
+                  const series = metrics.holdingsEvolution.series || [];
+                  const index = series.findIndex((point) => point.year === Number(label));
+                  const point = series[index];
+                  const previous = series[index - 1];
+                  const change = point && previous ? ((point.value - previous.value) / previous.value) * 100 : undefined;
+                  const gap = point && previous ? point.year - previous.year : undefined;
+                  return <div className="obs-chart-tooltip"><b>{label}</b><span>{num.format(point?.value || 0)} explorações agrícolas</span><small>{change === undefined ? "Primeiro ano observado" : `${percent.format(change)}% face a ${previous?.year} (${gap} anos)`}</small></div>;
+                }} />
+                <Line type="linear" dataKey="value" name="Explorações agrícolas" stroke="#14804a" strokeWidth={3} dot={{ r: 5, fill: "#14804a" }} activeDot={{ r: 7 }} />
+              </LineChart>
             </ResponsiveContainer>
           </ChartCard>
         </div>
         <div className="obs-trend-note">
           <span className="obs-trend-mark"><ArrowUpRight size={18} /></span>
-          <p><b>A SAU cresceu 2,1% entre 2019 e 2023, apesar de haver menos 9,8% de explorações.</b> A DREM associa a redução sobretudo às explorações com menos de 0,2 ha; o crescimento da área média não significa, por si só, consolidação fundiária.</p>
-          <button className="text-button" onClick={() => openDetail(metrics.sauChange)}>Ver fonte <ArrowRight size={14} /></button>
+          <p><b>Entre 2019 e 2023, as explorações diminuíram 9,8%, enquanto a SAU cresceu 2,1%.</b> A DREM identifica uma quebra de 23,8% nas explorações com menos de 0,2 ha como principal motor da redução. Para o Co.nTe, isto sugere desenhar pilotos simples e acessíveis também para parcelas pequenas; é uma implicação de desenho, não uma conclusão estatística sobre a procura por sensores.</p>
+          <button className="text-button" onClick={() => openDetail(holdingsEvolutionMetric)}>Ver evolução <ArrowRight size={14} /></button>
         </div>
       </section>
 

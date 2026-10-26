@@ -53,6 +53,15 @@ export const observatorySources: ObservatorySource[] = [
     note: "A área de vinha de 2019 provém dos quadros do Recenseamento Agrícola 2019 reproduzidos nesta publicação.",
   },
   {
+    id: "drem-holdings-2009-2019",
+    title: "Estatísticas da Agricultura e Pesca 2023 — Recenseamentos Agrícolas",
+    organization: "DREM / INE",
+    url: "https://estatistica.madeira.gov.pt/en/download-now-3/economic/agricultura-floresta-e-pescagb/prod-veg-prd-animal-pesca-gb/prod-vegetal-publicacoes-gb/send/74-producao-vegetal-publicacoes/17512-agricultura-e-pesca-2023pdf.html",
+    kind: "official",
+    referencePeriod: "2009 e 2019",
+    note: "O quadro I.1 publica 13 611 explorações em 2009 e 13 534 em 2019, segundo os Recenseamentos Agrícolas.",
+  },
+  {
     id: "ipma-funchal-normal",
     title: "Normal Climatológica — Funchal 1991–2020",
     organization: "IPMA",
@@ -152,6 +161,20 @@ export const observatoryIndicators = {
     period: "2023",
     sourceIds: ["drem-structure-2023"],
     note: "Contagem do IEEA 2023. O inquérito realizou 1 460 entrevistas; a comparação com 2019 indica uma redução de 9,8%.",
+  },
+  holdingsEvolution: {
+    id: "holdings-evolution-2009-2023",
+    title: "Evolução do número de explorações agrícolas",
+    unit: "explorações",
+    scope: "Região Autónoma da Madeira",
+    period: "2009, 2019 e 2023",
+    sourceIds: ["drem-holdings-2009-2019", "drem-structure-2023"],
+    note: "Pontos observados nos Recenseamentos Agrícolas de 2009 e 2019 e no IEEA 2023. O dado de 2023 resulta de inquérito por amostra extrapolada; a DREM reporta uma redução de 9,8% face a 2019. Não há observações anuais para os anos intermédios.",
+    series: [
+      { year: 2009, value: 13611 },
+      { year: 2019, value: 13534 },
+      { year: 2023, value: 12202 },
+    ],
   },
   sau: {
     id: "sau-2023",
@@ -342,11 +365,6 @@ export const climateAnnual = [
   { year: 2023, temperature: 21.6, precipitation: 527.9 },
   { year: 2024, temperature: 21.5, precipitation: 550.8 },
   { year: 2025, temperature: 20.8, precipitation: 669.7 },
-];
-
-export const landUseComposition = [
-  { year: "2019", arable: 35.5, permanent: 50.4, garden: 2.8, pasture: 11.2 },
-  { year: "2023", arable: 31.2, permanent: 51.8, garden: 3.5, pasture: 13.5 },
 ];
 
 export const cropProduction = [
