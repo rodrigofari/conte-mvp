@@ -39,6 +39,7 @@ import {
   Clock,
   ShieldCheck,
   ExternalLink,
+  BookOpen,
 } from "lucide-react";
 import type { Polygon } from "geojson";
 import MapView from "./MapView";
@@ -71,6 +72,7 @@ import {
 } from "./model";
 import type { Data, Farm, Parcel, Device, Coord } from "./model";
 import Terrains from "./Terrains";
+import Observatorio from "./Observatorio";
 import { openMeteo } from "./services";
 import type { Weather } from "./services";
 const tabs = [
@@ -81,6 +83,7 @@ const tabs = [
   { name: "Estações", icon: CloudSun },
   { name: "Alertas", icon: Bell },
   { name: "Analytics", icon: ChartNoAxesCombined },
+  { name: "Observatório", icon: BookOpen },
   { name: "Parceiros", icon: Users },
 ];
 const layerNames = [
@@ -1510,6 +1513,8 @@ export default function App() {
               </aside>
             )}
           </main>
+        ) : page === "Observatório" && !detail ? (
+          <Observatorio />
         ) : (
           <main className="content-page">
             <div className="page-heading">
