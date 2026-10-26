@@ -490,28 +490,36 @@ export default function MapView(props: Props) {
         );
       });
     }
-    const clusterMarkers = new Map<number, maplibregl.Marker>();
+    const clusterMarkers = new Map<string, maplibregl.Marker>();
     const updateClusters = () => {
       if (!m.isSourceLoaded("farms")) return;
-      const seen = new Set<number>();
+      const seen = new Set<string>();
+      const zoomedOut = !props.farmId && m.getZoom() <= 11;
       for (const f of m.querySourceFeatures("farms")) {
-        if (!f.properties.cluster) continue;
-        const cid = Number(f.properties.cluster_id);
-        seen.add(cid);
-        if (clusterMarkers.has(cid)) continue;
+        const clustered = Boolean(f.properties.cluster);
+        if (!clustered && !zoomedOut) continue;
+        const id = clustered
+          ? `cluster-${f.properties.cluster_id}`
+          : `farm-${f.properties.id}`;
+        seen.add(id);
+        if (clusterMarkers.has(id)) continue;
         const el = document.createElement("span");
         el.className = "cluster-count";
-        el.textContent = String(f.properties.point_count);
+        el.textContent = String(clustered ? f.properties.point_count : 1);
+        el.setAttribute(
+          "aria-label",
+          `${clustered ? f.properties.point_count : 1} explorações`,
+        );
         el.style.pointerEvents = "none";
         const marker = new maplibregl.Marker({ element: el })
           .setLngLat((f.geometry as Point).coordinates as Coord)
           .addTo(m);
-        clusterMarkers.set(cid, marker);
+        clusterMarkers.set(id, marker);
       }
-      for (const [cid, marker] of clusterMarkers) {
-        if (!seen.has(cid)) {
+      for (const [id, marker] of clusterMarkers) {
+        if (!seen.has(id)) {
           marker.remove();
-          clusterMarkers.delete(cid);
+          clusterMarkers.delete(id);
         }
       }
       const unclustered = new Set(
@@ -527,9 +535,19 @@ export default function MapView(props: Props) {
             (f) => f.name === marker.getElement().getAttribute("aria-label"),
           );
           if (farm)
-            marker.getElement().style.display = unclustered.has(farm.id)
+            marker.getElement().style.display =
+              !zoomedOut && unclustered.has(farm.id)
               ? ""
               : "none";
+        });
+      markers
+        .filter((marker) =>
+          ["sensor", "station", "alert"].some((kind) =>
+            marker.getElement().classList.contains(kind),
+          ),
+        )
+        .forEach((marker) => {
+          marker.getElement().style.display = zoomedOut ? "none" : "";
         });
     };
     m.on("render", updateClusters);
